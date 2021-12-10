@@ -13,14 +13,9 @@ VARIABLE COUNTS 5 CELLS ALLOT
 
 RESET
 
-: CATEGORY ( weight -- category )
-    DUP 18 < IF  REJECT       ELSE
-    DUP 21 < IF  SMALL        ELSE
-    DUP 24 < IF  MEDIUM       ELSE
-    DUP 27 < IF  LARGE        ELSE
-    DUP 30 < IF  EXTRA-LARGE  ELSE
-    ERROR
-    THEN THEN THEN THEN THEN  NIP ;
+CREATE SIZES 18 C, 21 C, 24 C, 27 C, 30 C, 255 C,
+
+: CATEGORY ( size -- )  6 0 DO DUP SIZES I + C@ < IF DROP I LEAVE THEN LOOP ;
 
 : LABEL ( category -- )
     CASE
