@@ -1,6 +1,13 @@
 include random.fs
 
 
+\ Change the current seed so RND always returns a different number on
+\ every execution. NOTE: utime returns a double so we drop the most
+\ significant part since we only care about the changing value of the
+\ miliseconds
+: CHANGE-SEED ( -- ) UTIME DROP SEED ! ;
+CHANGE-SEED  \ NOTE: Disable this if you want to run with predictable random values
+
 3 CONSTANT ROW-SIZE
 ROW-SIZE ROW-SIZE * CONSTANT BOARD-SIZE
 
@@ -14,7 +21,7 @@ VARIABLE BOARD BOARD-SIZE 1- CELLS ALLOT
 : BOARD-FIELD ( index -- address ) CELLS BOARD + ;
 : MARK-X! ( addr -- ) X SWAP ! ;
 : MARK-O! ( addr -- ) O SWAP ! ;
-: _RANDOM ( -- n) RND BOARD-SIZE MOD ;
+: _RANDOM ( -- n) BOARD-SIZE RANDOM ;
 : DISPLAY-BOARD ( -- ) 
     CR 
     BOARD-SIZE 0 DO 
@@ -25,13 +32,25 @@ VARIABLE BOARD BOARD-SIZE 1- CELLS ALLOT
         ELSE               \ otherwise add element separator
             ." | " 
         THEN LOOP ; 
+: BOARD-FULL ( -- flag ) 
+    TRUE
+    BOARD-SIZE 0 DO
+        DUP
+        I BOARD-FIELD @ EMPTY = AND
+        IF
+            DROP FALSE LEAVE
+        THEN LOOP ;
+
+: SPAM-RANDOM-MARKS ( -- ) 100 0 DO _RANDOM BOARD-FIELD MARK-X! BOARD-FULL IF LEAVE ELSE DISPLAY-BOARD THEN LOOP ;
 
 RESET
 DISPLAY-BOARD
+BOARD-FULL .
 CR
-\ Figure out how to change seed so we can check this works correctly
-_RANDOM BOARD-FIELD MARK-X!
+\ _RANDOM BOARD-FIELD MARK-X!
+SPAM-RANDOM-MARKS
 DISPLAY-BOARD
+BOARD-FULL .
 
 \ Use the following command to run this file
 \ gforth tic-tac-toe.fs -e bye
